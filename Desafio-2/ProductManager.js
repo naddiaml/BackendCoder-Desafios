@@ -1,27 +1,24 @@
-// Importación del módulo fs desde Node.js
 const fs = require('fs');
 
-// Definición de la clase ProductManager para gestionará los productos.
 class ProductManager {
-    constructor(path) { // Cuando se cree una nueva instancia de ProductManager, se pasará la ruta del archivo como argumento al constructor de la clase.
+    constructor(path) {
         this.path = path;
     }
 
     getProductsFromFile() {
         try {
-            const data = fs.readFileSync(this.path, 'utf8'); // Se utiliza el método readFileSync para leer el contenido del archivo especificado en this.path.
-            return JSON.parse(data); // Leído el contenido del archivo, se utiliza JSON.parse() para parsear los datos del archivo convertirlos en un objeto
+            const data = fs.readFileSync(this.path, 'utf8');
+            return JSON.parse(data);
         } catch (error) {
-            return []; // En caso de error en la lectura del archivo, retornará un array vacío.
+            return [];
         }
     }
 
-    // Método addProduct → agrega un nuevo producto al archivo de productos.
     addProduct(product) {
-        const products = this.getProductsFromFile(); // Se lee la lista de productos del archivo.
-        product.id = products.length > 0 ? products[products.length - 1].id + 1 : 1; // Se asigna un ID al nuevo producto, incrementando el ID del último producto en la lista.
-        products.push(product); // Se agrega el nuevo producto a la lista.
-        this.saveProductsToFile(products); // Se guarda la lista actualizada de productos en el archivo.
+        const products = this.getProductsFromFile();
+        product.id = products.length > 0 ? products[products.length - 1].id + 1 : 1;
+        products.push(product);
+        this.saveProductsToFile(products);
     }
 
     getProducts() {
@@ -29,31 +26,29 @@ class ProductManager {
     }
 
     getProductById(id) {
-        const products = this.getProductsFromFile(); //Lee el archivo 
-        return products.find(product => product.id === id); // Busca el producto por su ID en el array de productos, y si este existe, lo retorna.
+        const products = this.getProductsFromFile();
+        return products.find(product => product.id === id);
     }
 
-    // Método updateProduct → Este método actualiza un producto ya existente en el archivo.
     updateProduct(id, updatedProduct) {
         let products = this.getProductsFromFile();
-        const index = products.findIndex(product => product.id === id); // Busca el índice del producto a actualizar en la lista.
+        const index = products.findIndex(product => product.id === id);
         if (index !== -1) {
-            updatedProduct.id = id; // Se actualiza el campo id del objeto actualizado con el id original del producto a modificar para asegurar que el id del producto actualizado sea el mismo que el id original del producto que se está actualizando.
+            updatedProduct.id = id;
             products[index] = updatedProduct;
             this.saveProductsToFile(products);
             return true;
-        } // Si encuentra el producto, actualiza sus datos con los proporcionados y guarda la lista actualizada en el archivo.
+        }
         return false;
     }
 
-    // Método deleteProduct → Este método elimina un producto del archivo por su ID.
     deleteProduct(id) {
         let products = this.getProductsFromFile();
         products = products.filter(product => product.id !== id);
         this.saveProductsToFile(products);
     }
 
-    saveProductsToFile(products) { // Convierte los productos en formato JSON y los guarda en el archivo.
+    saveProductsToFile(products) {
         fs.writeFileSync(this.path, JSON.stringify(products, null, 2));
     }
 }

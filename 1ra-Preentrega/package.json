@@ -1,0 +1,11 @@
+{
+  "name": "1ra-preentrega",
+  "version": "1.0.0",
+  "description": "1ra. Pre-entrega · Curso de Programación Backend - CoderHouse",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nadia Mlinarevic",
+  "license": "ISC"
+}

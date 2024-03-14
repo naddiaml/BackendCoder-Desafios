@@ -3,6 +3,7 @@ const fs = require('fs');
 class ProductManager {
     constructor(path) {
         this.path = path;
+        this.products = this.getProductsFromFile();
     }
 
     getProductsFromFile() {
@@ -15,10 +16,9 @@ class ProductManager {
     }
 
     addProduct(product) {
-        const products = this.getProductsFromFile();
-        product.id = products.length > 0 ? products[products.length - 1].id + 1 : 1;
-        products.push(product);
-        this.saveProductsToFile(products);
+        product.id = this.generateUniqueId();
+        this.products.push(product);
+        this.saveProductsToFile(this.products);
     }
 
     getProductById(id) {
@@ -47,6 +47,10 @@ class ProductManager {
 
     saveProductsToFile(products) {
         fs.writeFileSync(this.path, JSON.stringify(products, null, 2));
+    }
+
+    getProducts() {
+        return this.getProductsFromFile();
     }
 }
 

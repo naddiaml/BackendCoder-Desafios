@@ -11,7 +11,7 @@ Welcome! :wave: This repository is dedicated to the submission of challenges for
 
 
 
-## Última actualización: Desafío 3 
+## Última actualización: Desafío 4 
 
 ### Instalación y configuración del entorno de desarrollo.
 ***Installation and configuration of the development environment.***
@@ -28,7 +28,7 @@ Para instalar y ejecutar el proyecto en su máquina local, siga estos pasos:
 		    
     
  2.  Navega a la carpeta correspondiente al desafío actual:
- 	
+
 	  *Navigate to the project directory:*
 
 		``` cd Desafio-3 ```
@@ -39,7 +39,7 @@ Para instalar y ejecutar el proyecto en su máquina local, siga estos pasos:
 
 		``` npm install ```
 
-		``` npm install express ```
+		``` npm install express express-handlebars socket.io ```
     
 4.  Ejecuta el servidor desde la terminal:
 
@@ -47,18 +47,23 @@ Para instalar y ejecutar el proyecto en su máquina local, siga estos pasos:
 	
 	  ``` node app.js ```
 	    
-	#### Prueba el servidor
+	#### Prueba el servidor, haciendo uso de [Postman](https://www.postman.com/downloads/)
 	-------------------------
-	 - Para obtener todos los productos, visita: 	
+	 - Para obtener todos los productos, visita, con un método GET, la ruta: 	
+
 		 *To get all products, visit:*
-		 `http://localhost:8080/products`
+
+		 `http://localhost:8080/api/products`
 	 
-	-  Para obtener un producto específico por su ID, visita: 
+	-  Para agregar algún producto, visita, con método POST, la ruta:
+
 		*To obtain a specific product by its ID, visit:*
-		`http://localhost:8080/products/:id`
+
+		`http://localhost:8080/api/products`
 		***
-		:arrows_counterclockwise: Reemplaza `:id` con el ID del producto que desees obtener.
-		:arrows_counterclockwise:  Replace `:id` with the ID of the product you want to get.
+		:exclamation: Envía como mensaje, un objeto con los siguientes campos, o de lo contrario recibirás un error y el producto no será agregado:
+
+        `{ "title": "Producto A", "description": "Descripción del Producto A", "price": 150, "thumbnails": ["Imagen_A.jpg"], "code": "def456", "stock": 20, "category": "x"}`
 
   
   

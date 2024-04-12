@@ -1,127 +1,41 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const http = require('http');
-const socketIo = require('socket.io');
-const exphbs = require('express-handlebars');
-const fs = require('fs');
-const ProductManager = require('./ProductManager.js');
-const CartManager = require('./CartManager.js');
+import express from 'express';
+import bodyParser from 'body-parser';
+import http from 'http';
+import { Server } from 'socket.io';
+import exphbs from 'express-handlebars';
+import mongoose from 'mongoose';
+import productRoutes from './routes/productRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
+
+import ProductManager from './services/ProductManager.js';
+import CartManager from './services/CartManager.js';
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = new Server(server);
 
 const PORT = 8080;
 
+// Conexión a la base de datos MongoDB
+mongoose.connect('mongodb+srv://naddiamlv:RfnvGERH18kS9A6M@e-commerce.a7cqkk3.mongodb.net/?retryWrites=true&w=majority&appName=E-Commerce')
+    .then(() => {
+        console.log('Conexión exitosa a la base de datos MongoDB');
+    })
+    .catch((err) => {
+        console.error('Error al conectar a la base de datos MongoDB:', err);
+        process.exit(1);
+    });
+
 app.use(bodyParser.json());
 
-app.engine('.handlebars', exphbs({ extname: '.handlebars' }));
+app.engine('.handlebars', exphbs.engine({ extname: '.handlebars' }));
 app.set('view engine', '.handlebars');
 
-const productManager = new ProductManager('products.json');
-const cartManager = new CartManager('carritos.json');
+app.use('/api/products', productRoutes);
+app.use('/api/carts', cartRoutes);
 
-const productsRouter = express.Router();
-
-productsRouter.get('/', (req, res) => {
-    const products = productManager.getProducts();
-    res.json(products);
-});
-
-productsRouter.get('/:pid', (req, res) => {
-    const productId = parseInt(req.params.pid);
-    const product = productManager.getProductById(productId);
-    if (product) {
-        res.json(product);
-    } else {
-        res.status(404).json({ message: 'Producto no encontrado' });
-    }
-});
-
-productsRouter.post('/', (req, res) => {
-    const newProduct = req.body;
-    const requiredFields = ['title', 'description', 'code', 'price', 'stock', 'category'];
-    const missingFields = requiredFields.filter(field => !newProduct[field]);
-    if (missingFields.length > 0) {
-        return res.status(400).json({ message: `Faltan campos obligatorios: ${missingFields.join(', ')}` });
-    }
-    if (!Array.isArray(newProduct.thumbnails) || newProduct.thumbnails.some(thumbnail => typeof thumbnail !== 'string')) {
-        return res.status(400).json({ message: 'El campo "thumbnails" debe ser un array de strings' });
-    }
-    productManager.addProduct(newProduct);
-    
-    fs.readFile('products.json', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error al leer el archivo products.json:', err);
-            return res.status(500).json({ message: 'Error interno del servidor' });
-        }
-
-        let products = JSON.parse(data);
-        products.push(newProduct);
-
-        fs.writeFile('products.json', JSON.stringify(products, null, 2), (err) => {
-            if (err) {
-                console.error('Error al escribir en el archivo products.json:', err);
-                return res.status(500).json({ message: 'Error interno del servidor' });
-            }
-            res.status(201).json(newProduct);
-        });
-    });
-});
-
-productsRouter.put('/:pid', (req, res) => {
-    const productId = parseInt(req.params.pid);
-    const updatedProduct = req.body;
-    const success = productManager.updateProduct(productId, updatedProduct);
-    if (success) {
-        res.json(updatedProduct);
-    } else {
-        res.status(404).json({ message: 'Producto no encontrado' });
-    }
-});
-
-productsRouter.delete('/:pid', (req, res) => {
-    const productId = parseInt(req.params.pid);
-    const success = productManager.deleteProduct(productId);
-    if (success) {
-        res.status(204).end();
-    } else {
-        res.status(404).json({ message: 'Producto no encontrado' });
-    }
-});
-
-const cartsRouter = express.Router();
-
-cartsRouter.post('/', (req, res) => {
-    const newCart = { id: Date.now().toString(), products: [] };
-    cartManager.addCart(newCart);
-    res.status(201).json(newCart);
-});
-
-cartsRouter.get('/:cid', (req, res) => {
-    const cartId = req.params.cid;
-    const cart = cartManager.getCartById(cartId);
-    if (cart) {
-        res.json(cart);
-    } else {
-        res.status(404).json({ message: 'Carrito no encontrado' });
-    }
-});
-
-cartsRouter.post('/:cid/product/:pid', (req, res) => {
-    const cartId = req.params.cid;
-    const productId = parseInt(req.params.pid);
-    const quantity = parseInt(req.body.quantity);
-    const cart = cartManager.addProductToCart(cartId, productId, quantity);
-    if (cart) {
-        res.json(cart);
-    } else {
-        res.status(404).json({ message: 'Carrito no encontrado' });
-    }
-});
-
-app.use('/api/products', productsRouter);
-app.use('/api/carts', cartsRouter);
+const productManager = new ProductManager();
+const cartManager = new CartManager();
 
 app.get('/', (req, res) => {
     const products = productManager.getProducts();
@@ -140,8 +54,6 @@ io.on('connection', (socket) => {
     });
 });
 
-app.use('/api/products', productsRouter);
-
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto ${PORT}`);
 });

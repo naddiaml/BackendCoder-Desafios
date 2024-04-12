@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const http = require('http');
 const socketIo = require('socket.io');
 const exphbs = require('express-handlebars');
-const fs = require('fs'); // Se agrega la importación de fs para manejar archivos
+const fs = require('fs');
 const ProductManager = require('./ProductManager.js');
 const CartManager = require('./CartManager.js');
 
@@ -50,7 +50,6 @@ productsRouter.post('/', (req, res) => {
     }
     productManager.addProduct(newProduct);
     
-    // Leer los productos existentes del archivo
     fs.readFile('products.json', 'utf8', (err, data) => {
         if (err) {
             console.error('Error al leer el archivo products.json:', err);
@@ -60,7 +59,6 @@ productsRouter.post('/', (req, res) => {
         let products = JSON.parse(data);
         products.push(newProduct);
 
-        // Escribir los productos actualizados en el archivo
         fs.writeFile('products.json', JSON.stringify(products, null, 2), (err) => {
             if (err) {
                 console.error('Error al escribir en el archivo products.json:', err);
@@ -125,19 +123,16 @@ cartsRouter.post('/:cid/product/:pid', (req, res) => {
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 
-// Ruta para home.handlebars
 app.get('/', (req, res) => {
     const products = productManager.getProducts();
     res.render('home', { products });
 });
 
-// Ruta para realTimeProducts.handlebars
 app.get('/realtimeproducts', (req, res) => {
     const products = productManager.getProducts();
     res.render('realTimeProducts', { products });
 });
 
-// Endpoint POST para creación de productos usando sockets
 io.on('connection', (socket) => {
     socket.on('newProduct', (newProduct) => {
         productManager.addProduct(newProduct);
